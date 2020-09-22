@@ -22,8 +22,26 @@ const config = {
 
 firebase.initializeApp(config)
 
+//Helper Validation Functions
+const isEmpty = (string) => {
+  if(string.trim() === '') return true;
+    else 
+    return false;
+}
+
+const isEmailValid = (email) => {
+  const regEx = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+  if(email.match(regEx))
+    return true
+  else
+    return false
+}
 
 
+
+
+
+//API Routes
 app.get('/screams', (req, res) => {
   db
   .firestore()
@@ -72,7 +90,21 @@ app.post('/signup', (req, res) => {
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
     handle: req.body.handle
+  };
+
+  let errors = {}
+
+  if(isEmpty(newUser.email)) {
+    errors.email = 'Email Must Not Be Empty'
+  } else if(!isEmailValid(newUser.email)) {
+    errors.email = 'Must Be a valid Email'
   }
+
+  if(isEmpty(newUser.password)) errors.password = "Password Must Not Be Empty"
+  if(newUser.password !== newUser.confirmPassword) errors.confirmPassword = "Passwords Must Match"
+  if(isEmpty(newUser.handle)) errors.handle = "Password Must Not Be Empty"
+
+  if(Object.keys(errors).length > 0) return res.status(400).json(errors)
 
   //Validate Data
   let token, userId;
